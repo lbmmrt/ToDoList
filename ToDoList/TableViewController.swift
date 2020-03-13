@@ -7,17 +7,37 @@
 //
 
 import UIKit
+import CoreData
 
 class TableViewController: UITableViewController {
     
-    var toDoItems: [String] = []
+    var toDoItems: [Task] = []
+    
+    func saveTask(taskToDo: String) {
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let entity = NSEntityDescription.entity(forEntityName: "Task", in: context)
+        let taskObject = NSManagedObject(entity: entity!, insertInto: context) as! Task
+        taskObject.taskToDo = taskToDo
+        
+        do {
+            try context.save()
+            toDoItems.append(taskObject)
+            print("Saved!")
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
     
     @IBAction func addTask(_ sender: UIBarButtonItem) {
         
         let alertToDo = UIAlertController(title: "Add Task", message: "add new task", preferredStyle: .alert)
         
         let ok = UIAlertAction(title: "Ok", style: .default) { action in let textFild =       alertToDo.textFields?[0]
-            self.toDoItems.insert((textFild?.text)!, at: 0)
+            self.saveTask(taskToDo: (textFild?.text)!)
+            //   self.toDoItems.insert((textFild?.text)!, at: 0)
             self.tableView.reloadData()
             
         }
@@ -33,6 +53,7 @@ class TableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+    
         
         
     }
@@ -53,7 +74,9 @@ class TableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        cell.textLabel?.text = toDoItems[indexPath.row]
+        let task = toDoItems[indexPath.row]
+        cell.textLabel?.text = task.taskToDo
+    
         
         
         return cell
